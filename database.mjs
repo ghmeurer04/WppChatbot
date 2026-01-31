@@ -1,5 +1,7 @@
 import { MongoClient } from 'mongodb'
 import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
+const openAI_client = new OpenAI();
 
 var client
 var database
@@ -69,12 +71,12 @@ export function getRandomInt(min, max) {
 }
 
 export async function get_request(prompt) {
-    console.log(prompt);
-    const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
-        contents: prompt,
+    const response = await openAI_client.responses.create({
+        model: "gpt-5-mini",
+        input: prompt
     });
-    return response.text;
+    console.log(response.output_text)
+    return response.output_text;
   
 }
 
@@ -84,9 +86,10 @@ export async function get_request_media(prompt,mediaType,data){
         { inlineData: { mimeType: mediaType, data: data } },
     ];
     const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
+        model: "gemini-2.5-flash-lite",
         contents: contents,
     });
+    //console.log(response.text)
   return response.text;
 }
 
