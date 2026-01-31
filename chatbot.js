@@ -2,14 +2,15 @@ import * as db from './database.mjs'
 import * as messages from './messages.js'
 import qrcode from 'qrcode-terminal';
 import * as localAuth from './LocalAuth.cjs'
+import * as f from './functions.js'
 
 
 let MIN_TIME = 4000;
 let MAX_TIME = 6000;
 let REQUEST_LIMIT = 300;
 
-const client = localAuth.initialize_client()
 
+const client = localAuth.initialize_client()
 
 client.on('qr', qr => {
     qrcode.generate(qr, {small: true});
@@ -18,27 +19,13 @@ client.on('code', (code) => {
     console.log("Linking code:",code);
 });
 
-
 client.on('ready', () => {
     console.log('Tudo certo! WhatsApp conectado.');
     db.initialize();
-    sendToWhatsApp();
+    f.sendToWhatsApp(client);
 });
 
-
 client.initialize();
-const delay = ms => new Promise(res => setTimeout(res, ms));
-
-async function retry(fn, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-        await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
-        if (attempt === retries) throw err;
-    }
-  }
-}
 
 client.on('message', async msg => {
 try {
@@ -51,11 +38,11 @@ try {
     msg.body = msg.body.toLowerCase().trim();
 
     const chat = await msg.getChat();
-    await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
     await chat.sendStateTyping(); 
-    await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
 
-    await retry(async () => {
+    await f.retry(async () => {
     //USUÁRIO NÃO CADASTRADO
     if (user.length == 0) {
 
@@ -113,9 +100,9 @@ try {
                 new_id = reports[reports.length-1].id + 1;
             }
             await db.insert('report',{"description":"Salário","value":String(value),"method":"", "phone_number":String(number),"category":"", "id": Number(new_id), "date": new Date().getTime()});
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
             await client.sendMessage(msg.from, messages.get_message_entry(String(value),new_id));
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
             await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
 
     }
@@ -144,7 +131,7 @@ try {
             }
             await client.sendMessage(msg.from,response);
         } catch {
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
             await client.sendMessage(msg.from,"Desculpe, não consegui realizar uma análise nesse momento, favor tentar novamente mais tarde");
         }
 
@@ -154,7 +141,7 @@ try {
 
 
     //REMOVER GASTO
-    else if ((msg.body.match(/[Rr]emover.*\d+/))) {
+    else if ((msg.body.match(/[Rr]emover.*\d+\|[Ee]xcluir.*\d+/))) {
 
         var id = msg.body.match(/\d+/);
         if(await db.remove('report',{"id":{$eq:Number(id[0])},"phone_number":{$eq:number}})){
@@ -188,7 +175,7 @@ try {
                 await db.insert('users',{"phone_number":new_number,"name":splitted[3],"email":splitted[4],"due_date": new Date().setMonth(new Date().getMonth() + 1)});
             }
             await client.sendMessage(new_number, messages.get_message_welcome(splitted[3]));
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
             await client.sendMessage(new_number, messages.get_message_menu(splitted[3]));
 
         }
@@ -240,9 +227,9 @@ Número: ' + splitted[2]);
                 first = false;
                 await client.sendMessage(msg.from, messages.get_message_payment(name));
             }
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
             await client.sendMessage(msg.from, await messages.get_message_result(result,new_id));
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
             await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
             }
         }
@@ -290,16 +277,16 @@ Número: ' + splitted[2]);
                         await db.insert('report',{"description":String(await db.capitalizeFirstLetter(String(result.descricao))),"value":String(result.valor),"method":String(result.metodo), "phone_number":String(number),"category":String(result.categoria), "id": Number(new_id), "date": new Date().getTime()});
                         await client.sendMessage(msg.from, messages.get_message_payment(name));
                     }
-                    await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+                    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
                     await client.sendMessage(msg.from, await messages.get_message_result(result,new_id));
-                    await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+                    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
                     await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
 
                 } catch(e){
                     console.log('Erro:', e);
                     console.log('Mensagem:', msg.body)
                     await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
-                    await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+                    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
                     await client.sendMessage(msg.from, messages.get_message_reminder_failed_payment())
                 }
             }
@@ -327,9 +314,9 @@ Número: ' + splitted[2]);
                 }
                 await db.insert('report',{"description":String(await db.capitalizeFirstLetter(String(result.descricao))),"value":String(result.valor),"method":"Assinatura", "phone_number":String(number),"category":"Assinatura", "id": Number(new_id), "date": new Date().getTime()});
                 
-                await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+                await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
                 await client.sendMessage(msg.from, messages.get_message_signature(String(await db.capitalizeFirstLetter(String(result.descricao))),String(result.valor),new_id));
-                await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+                await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
                 await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
 
 
@@ -381,9 +368,9 @@ Número: ' + splitted[2]);
             }
         }
 
-    await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
     await chat.sendStateTyping();
-    await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+    await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
     }
 });
 }
@@ -395,44 +382,19 @@ Número: ' + splitted[2]);
         const number = contact.id._serialized;
         const name = contact.pushname;
 
-        await delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
+        await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME)); 
         await chat.sendStateTyping(); 
-        await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+        await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
         console.log('Erro:', e);
         console.log('Mensagem:', msg.body)
         await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
 
-        await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+        await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
         await chat.sendStateTyping();
-        await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+        await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
 
     }
 });
-
-async function sendToWhatsApp() {
-    console.log('Sending messages to WhatsApp...');
-    
-    var time = remainingTime();
-    if(time > 863000000){
-        await new Promise(resolve => setTimeout(resolve, 862000000));
-    }
-    time = remainingTime();
-    await new Promise(resolve => setTimeout(resolve, time));
-    const users = await db.find('users',{"phone_number":{$ne:"12138927437@c.us"}}); // Exclude Zapier number
-    //const users = await db.find('users',{"phone_number":{$eq:"556798553495@c.us"}});
-    for (let i = 0; i < users.length; i++) {
-        var user = users[i];
-        let new_number = user.phone_number.replace("@c.us","");
-        new_number = await client.getNumberId(new_number);
-        new_number = new_number._serialized;
-        console.log('await sendMessage to ',new_number);
-        await client.sendMessage(new_number, await messages.get_report_message("fatura",new_number,true));
-        await db.update('users',{"phone_number":{$eq:new_number}},{$set:{"requests":0}});
-        await delay(db.getRandomInt(60000,90000));
-    }
-    sendToWhatsApp();
-
-}
 
 export async function addNewUser(number,name,email){
     number = number.replace("+","");
@@ -450,14 +412,6 @@ export async function addNewUser(number,name,email){
                 await db.insert('users',{"phone_number":number,"name":name,"email":email,"due_date": new Date().setMonth(new Date().getMonth() + 1)});
             }
             await client.sendMessage(number, messages.get_message_welcome(name));
-            await delay(db.getRandomInt(MIN_TIME,MAX_TIME));
+            await f.delay(db.getRandomInt(MIN_TIME,MAX_TIME));
             await client.sendMessage(number, messages.get_message_menu(name));
-}
-
-function remainingTime() {
-    const current = new Date();
-    var next = new Date(new Date().setMonth(current.getMonth() + 1));
-    next = new Date(next.getFullYear(), next.getMonth(), 1)
-    //return 1000
-    return next - current;
 }
