@@ -141,7 +141,7 @@ try {
 
 
     //REMOVER GASTO
-    else if ((msg.body.match(/[Rr]emover.*\d+\|[Ee]xcluir.*\d+/))) {
+    else if ((msg.body.match(/[Rr]emover.*\d+|[Ee]xcluir.*\d+/))) {
 
         var id = msg.body.match(/\d+/);
         if(await db.remove('report',{"id":{$eq:Number(id[0])},"phone_number":{$eq:number}})){

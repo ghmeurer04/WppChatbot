@@ -7,7 +7,7 @@ const app = express();
 // If you're testing with the CLI, run 'stripe listen' to find the secret key
 // If you defined your endpoint using the API or the Dashboard, check your webhook settings for your endpoint secret: https://dashboard.stripe.com/webhooks
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = 'whsec_NGgNUBQbWeqT2zZdcRJOqWivBuRODUmE'
+const endpointSecret = process.env.WEBHOOK_SECRET_KEY
 
 // The express.raw middleware keeps the request body unparsed;
 // this is necessary for the signature verification process

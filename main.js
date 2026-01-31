@@ -1,0 +1,1 @@
+const webhook = require("./src/webhook.cjs");
