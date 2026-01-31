@@ -1,7 +1,6 @@
 import * as db from './database.mjs'
 import * as messages from './messages.js'
 import qrcode from 'qrcode-terminal';
-import {Client}  from 'whatsapp-web.js';
 import * as localAuth from './LocalAuth.cjs'
 
 
