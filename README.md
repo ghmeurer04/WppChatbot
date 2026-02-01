@@ -105,12 +105,12 @@ Configure seu endpoint Stripe em `webhook.cjs` com sua chave de webhook secreta.
 
 ## 📄 Licença
 
-MIT
+Este projeto é licenciado **apenas para uso não comercial**.  
+O uso comercial requer autorização explícita do autor.
+
 
 ## 👤 Autor
 
 Gabriel Meurer - [@ghmeurer](https://github.com/ghmeurer)
 
 ---
-
-**Última atualização**: 31 de Janeiro de 2026
