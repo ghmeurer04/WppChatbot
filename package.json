@@ -1,10 +1,17 @@
 {
+  "scripts": {
+    "start": "node main.js",
+    "start:webhook": "node src/webhook.cjs",
+    "start:bot": "node src/chatbot.js"
+  },
   "dependencies": {
     "@google/genai": "^1.14.0",
     "@google/generative-ai": "^0.24.1",
+    "express": "^4.21.2",
     "moment-timezone": "^0.5.45",
     "mongodb": "^6.18.0",
     "qrcode-terminal": "^0.12.0",
+    "stripe": "^17.7.0",
     "whatsapp-web.js": "file:install"
   }
 }

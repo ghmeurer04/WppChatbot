@@ -1,46 +1,87 @@
-const cb = require("./chatbot.js");
 const express = require('express');
-const Stripe = require("stripe");
+const Stripe = require('stripe');
+
 const app = express();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+const endpointSecret = process.env.WEBHOOK_SECRET_KEY;
+const port = Number(process.env.PORT || 3000);
 
-// Replace this endpoint secret with your unique endpoint secret key
-// If you're testing with the CLI, run 'stripe listen' to find the secret key
-// If you defined your endpoint using the API or the Dashboard, check your webhook settings for your endpoint secret: https://dashboard.stripe.com/webhooks
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.WEBHOOK_SECRET_KEY
+function getCustomerDataFromEvent(event) {
+  const object = event?.data?.object || {};
+  const metadata = object.metadata || {};
 
-// The express.raw middleware keeps the request body unparsed;
-// this is necessary for the signature verification process
-app.post('/stripe/webhook', express.raw({type: 'application/json'}), async (request, response) => {
-  let event;
-  if (endpointSecret) {
-    // Get the signature sent by Stripe
-    const signature = request.headers['stripe-signature'];
-    try {
-      event = stripe.webhooks.constructEvent(
-        request.body,
-        signature,
-        endpointSecret
-      );
-    } catch (err) {
-      console.log(`⚠️ Webhook signature verification failed.`, err.message);
-      return response.sendStatus(400);
-    }
+  const customerPhone = metadata.customer_phone || metadata.phone || object.customer_phone;
+  const customerName = metadata.customer_name || metadata.name || object.customer_name;
+  const customerEmail = metadata.customer_email || metadata.email || object.customer_email || object.customer_details?.email;
 
-  // Handle the event
-  switch (event.type) {
-    case 'invoice.payment_succeeded':
-      const payment = event.data.object;
-      console.log(payment.customer_phone,payment.customer_name,payment.customer_email)
-      await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email)
-      break;
-    default:
-      console.log(event.type)
-      
+  return { customerPhone, customerName, customerEmail };
+}
+
+async function getAddNewUser() {
+  const chatbotModule = await import('./chatbot.js');
+
+  if (typeof chatbotModule.addNewUser !== 'function') {
+    throw new Error('addNewUser export not found in chatbot.js');
   }
 
-  // Return a response to acknowledge receipt of the event
-  response.json({received: true});
-}});
+  return chatbotModule.addNewUser;
+}
 
-app.listen(3000, () => console.log('Running on port 3000'));
+function parseUnverifiedEvent(rawBody) {
+  try {
+    const payload = rawBody instanceof Buffer ? rawBody.toString('utf8') : String(rawBody || '');
+    return JSON.parse(payload);
+  } catch (error) {
+    throw new Error(`Invalid JSON payload: ${error.message}`);
+  }
+}
+
+app.get('/stripe/webhook/health', (_request, response) => {
+  return response.status(200).json({ ok: true, endpoint: '/stripe/webhook' });
+});
+
+app.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (request, response) => {
+  let event;
+
+  try {
+    if (endpointSecret) {
+      const signature = request.headers['stripe-signature'];
+      event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
+    } else {
+      event = parseUnverifiedEvent(request.body);
+    }
+  } catch (err) {
+    console.log('⚠️ Stripe webhook could not be validated/parsed.', err.message);
+    return response.sendStatus(400);
+  }
+
+  try {
+    console.log('ℹ️ Stripe event received:', event.type);
+
+    switch (event.type) {
+      case 'invoice.payment_succeeded':
+      case 'checkout.session.completed': {
+        const payment = getCustomerDataFromEvent(event);
+
+        if (!payment.customerPhone || !payment.customerName || !payment.customerEmail) {
+          console.log('⚠️ Missing required customer metadata.', payment);
+          break;
+        }
+
+        const addNewUser = await getAddNewUser();
+        await addNewUser(payment.customerPhone, payment.customerName, payment.customerEmail);
+        console.log('✅ Customer released after Stripe payment:', payment.customerPhone);
+        break;
+      }
+      default:
+        console.log('ℹ️ Stripe event ignored by webhook:', event.type);
+    }
+
+    return response.json({ received: true });
+  } catch (error) {
+    console.log('❌ Error while processing Stripe event:', error.message);
+    return response.status(500).json({ error: 'Webhook processing failed' });
+  }
+});
+
+app.listen(port, () => console.log(`Running Stripe webhook on port ${port}`));

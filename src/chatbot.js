@@ -366,7 +366,7 @@ export async function addNewUser(number, name, email) {
     number = number._serialized;
     const new_user = await db.find('users', {"phone_number": {$eq: number}});
     if(new_user.length > 0) {
-        const updatedDate = new_user.due_date < new Date() ? new Date().setMonth(new Date().getMonth() + 1) : new Date(new_user[0].due_date).setMonth(new Date(new_user[0].due_date).getMonth() + 1);
+        const updatedDate = new_user[0].due_date < new Date() ? new Date().setMonth(new Date().getMonth() + 1) : new Date(new_user[0].due_date).setMonth(new Date(new_user[0].due_date).getMonth() + 1);
         await db.update('users', {"phone_number": {$eq: number}}, {$set: {"due_date": updatedDate}});
     } else {
         await db.insert('users', {

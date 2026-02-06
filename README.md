@@ -62,7 +62,12 @@ npm start
 
 Ou com Node.js diretamente:
 ```bash
-node chatbot.js
+node src/chatbot.js
+```
+
+Para subir o webhook Stripe:
+```bash
+node src/webhook.cjs
 ```
 
 1. Um QR Code será exibido no terminal
@@ -87,8 +92,34 @@ Edite `chatbot.js` para ajustar:
 - `MAX_TIME`: Tempo máximo entre respostas (ms)
 - `REQUEST_LIMIT`: Limite de requisições
 
+
 ### Webhook Stripe
-Configure seu endpoint Stripe em `webhook.cjs` com sua chave de webhook secreta.
+Configure seu endpoint Stripe em `src/webhook.cjs` com sua chave de webhook secreta.
+
+Variáveis necessárias no `.env`:
+```env
+STRIPE_SECRET_KEY=sk_test_ou_sk_live
+WEBHOOK_SECRET_KEY=whsec_sua_chave_do_endpoint
+```
+
+URL do endpoint no Stripe Dashboard:
+```
+https://seu-dominio.com/stripe/webhook
+```
+
+Para testes locais, use Stripe CLI:
+```bash
+stripe listen --forward-to localhost:3000/stripe/webhook
+```
+
+> Importante: para liberar o usuário no chatbot, envie `customer_phone`, `customer_name` e `customer_email` em `metadata` da cobrança/sessão Stripe.
+
+Verifique se o webhook está no ar:
+```bash
+curl http://localhost:3000/stripe/webhook/health
+```
+
+Se `WEBHOOK_SECRET_KEY` não estiver configurada, o servidor processa o JSON sem validar assinatura (somente para desenvolvimento local).
 
 ## 🐛 Solução de Problemas
 
