@@ -6,7 +6,7 @@ const openAI_client = new OpenAI();
 var client
 var database
 var session
-const ai = new GoogleGenAI({ apiKey: "AIzaSyBtipJvjVwTkcF6KKdIwl5UC4b7Xr3DRFQ" });
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
 export function initialize(){
     const uri = "mongodb://localhost:27017/";

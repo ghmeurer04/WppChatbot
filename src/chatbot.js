@@ -62,7 +62,7 @@ client.on('message', async msg => {
 
             // Check if user is not registered
             if (user.length == 0) {
-                await client.sendMessage(msg.from, messages.get_message_unregistered(name));
+                //await client.sendMessage(msg.from, messages.get_message_unregistered(name));
             }
 
             // Handle request limit
