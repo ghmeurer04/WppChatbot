@@ -12,7 +12,7 @@ function getRandomInt(min, max) {
 export function get_message_welcome(name){
     return 'Parabéns por esse passo, ' + name + '! Agora você tem uma ferramenta que te dá controle, segurança e \
 poder sobre o seu dinheiro.\n\n\
-Para acessar o menu a qualquer momento, é só digitar "*menu*" ou "*fatura*".'Mes
+Para acessar o menu a qualquer momento, é só digitar "*menu*" ou "*fatura*".'
 };
 
 export function get_message_menu(name){
