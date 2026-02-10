@@ -75,7 +75,7 @@ export async function get_request(prompt) {
         model: "gpt-5-mini",
         input: prompt
     });
-    console.log(response.output_text)
+    //console.log(response.output_text)
     return response.output_text;
   
 }

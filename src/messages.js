@@ -77,7 +77,7 @@ export function get_message_help(name){
 Simples, rápido e direto ao ponto! 💬✅'
 }
 
-export function get_message_failed_payment(name){
+export function get_message_failed_payment(){
     const variant = getRandomInt(1,15);
     switch (variant){
         case 1:
@@ -336,7 +336,7 @@ Frase: " + message;
 
 export function get_prompt_opinion(report_message){
     report_message = report_message.slice(report_message.indexOf("-----------------"))
-    return report_message + " \n\nObserve as informações financeiras fornecidas e gere apenas um texto curto, leve e resumido, contendo emojis, identificando pontos de melhoria financeira. Evite listas extensas, títulos ou muitos bullet points. Prefira um parágrafo contínuo ou poucos parágrafos, com linguagem clara, prática e acessível, focada em ajustes realistas para o próximo período."    
+    return report_message + " \n\nObserve as informações financeiras fornecidas e gere apenas um texto curto, leve e resumido, contendo emojis, identificando pontos de melhoria financeira. Evite listas extensas, títulos ou muitos bullet points. Não elogie a estrutura da lista no inicio da frase e prefira um parágrafo contínuo ou poucos parágrafos, com linguagem clara, concisa, prática e acessível, focada em ajustes realistas para o próximo período."    
 }
 
 
@@ -357,8 +357,6 @@ export async function get_report_message(input_msg, number,last_month = false){
             } else if (last_month) {
                 start = new Date(new Date().getFullYear(),new Date().getMonth() - 1,1);
                 end.setDate(end.getDate() - 1);
-                console.log(start.toLocaleDateString('pt-BR'));
-                console.log(end.toLocaleDateString('pt-BR'));
                 message += '🧾 Fatura ' + await db.capitalizeFirstLetter(start.toLocaleString('pt-BR', { month: 'long' })) + '/' + start.getFullYear() + '\n';
             } else {
                 message += '🧾 Fatura ' + await db.capitalizeFirstLetter(start.toLocaleString('pt-BR', { month: 'long' })) + '/' + start.getFullYear() + '\n';
@@ -367,7 +365,7 @@ export async function get_report_message(input_msg, number,last_month = false){
             start.setUTCHours(0,0,0,1)
             end.setUTCHours(23,59,59,999)
             start = new Date(start.setHours(start.getHours() + 3));
-            end = new Date(end.setHours(end.getHours() + 3));
+            end = new Date(end.getFullYear(),end.getMonth() + 1,0);
             var documents = await db.find('report',{$and:[{"phone_number":{$eq:number}},{"method":{$ne:"Assinatura"}},{"date":{$gt:start.getTime()}},{"date":{$lt:end.getTime()}}]});
             var signatures = await db.find('report',{$and:[{"phone_number":{$eq:number}},{"method":{$eq:"Assinatura"}}]});
             var entrada = documents.filter(x => x.method == '')
