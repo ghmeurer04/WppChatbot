@@ -360,20 +360,20 @@ client.on('message', async msg => {
 });
 
 // Function to add a new user
-export async function addNewUser(number, name, email) {
+export async function addNewUser(number, name, email,time) {
     number = number.replace("+", "");
     number = await client.getNumberId(number);
     number = number._serialized;
     const new_user = await db.find('users', {"phone_number": {$eq: number}});
     if(new_user.length > 0) {
-        const updatedDate = new_user.due_date < new Date() ? new Date().setMonth(new Date().getMonth() + 1) : new Date(new_user[0].due_date).setMonth(new Date(new_user[0].due_date).getMonth() + 1);
+        const updatedDate = new_user.due_date < new Date() ? new Date().setMonth(new Date().getMonth() + time) : new Date(new_user[0].due_date).setMonth(new Date(new_user[0].due_date).getMonth() + time);
         await db.update('users', {"phone_number": {$eq: number}}, {$set: {"due_date": updatedDate}});
     } else {
         await db.insert('users', {
             "phone_number": number,
             "name": name,
             "email": email,
-            "due_date": new Date().setMonth(new Date().getMonth() + 1)
+            "due_date": new Date().setMonth(new Date().getMonth() + time)
         });
     }
     await client.sendMessage(number, messages.get_message_welcome(name));

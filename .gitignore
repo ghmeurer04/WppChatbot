@@ -3,3 +3,5 @@ npm-debug.log
 .wwebjs_auth
 .wwebjs_cache
 ecosystem.config.js
+.env
+cloudflared-linux-amd64.deb

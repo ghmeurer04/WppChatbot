@@ -27,13 +27,17 @@ export async function sendToWhatsApp(client) {
     console.log('Sending messages to WhatsApp...');
     
     var time = remainingTime();
-    if(time > 863000000){
+    /*if(time > 863000000){
         await new Promise(resolve => setTimeout(resolve, 862000000));
-    }
-    time = remainingTime();
+    }*/
+   while (time > 43200000){
+      console.log ("Awaiting ", time)
+      await new Promise (resolve => setTimeout(resolve, 40000000))
+      time = remainingTime();
+   }
     await new Promise(resolve => setTimeout(resolve, time));
-    const users = await db.find('users',{"phone_number":{$ne:"12138927437@c.us"}}); // Exclude Zapier number
-    //const users = await db.find('users',{"phone_number":{$eq:"556798553495@c.us"}});
+    //const users = await db.find('users',{"phone_number":{$ne:"12138927437@c.us"}}); // Exclude Zapier number
+    const users = await db.find('users',{"phone_number":{$eq:"556798553495@c.us"}});
     for (let i = 0; i < users.length; i++) {
         var user = users[i];
         let new_number = user.phone_number.replace("@c.us","");
