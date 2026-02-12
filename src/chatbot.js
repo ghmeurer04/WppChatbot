@@ -360,7 +360,7 @@ client.on('message', async msg => {
 });
 
 // Function to add a new user
-export async function addNewUser(number, name, email,time) {
+export async function addNewUser(number, name, email,time,stripe_customer) {
     number = number.replace("+", "");
     number = await client.getNumberId(number);
     number = number._serialized;
@@ -373,10 +373,21 @@ export async function addNewUser(number, name, email,time) {
             "phone_number": number,
             "name": name,
             "email": email,
-            "due_date": new Date().setMonth(new Date().getMonth() + time)
+            "due_date": new Date().setMonth(new Date().getMonth() + time),
+            "stripe_customer": stripe_customer
         });
     }
     await client.sendMessage(number, messages.get_message_welcome(name));
     await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
     await client.sendMessage(number, messages.get_message_menu(name));
+}
+
+export async function refund_user(name,email,stripe_customer,time){
+    const updatedDate = new Date().setMonth(new Date().getMonth() - time)
+    const user = await db.find('users', {"stripe_customer": {$eq: stripe_customer},"name":{$eq: name}, "email":{$eq: email}});
+    if(user.length > 0) {
+        await db.update('users',{"stripe_customer": {$eq: stripe_customer},"name":{$eq: name}, "email":{$eq: email}},{$set: {"due_date": updatedDate}})
+    } else{
+        console.log('Could not find user with ',name,email,stripe_customer)
+    }
 }
