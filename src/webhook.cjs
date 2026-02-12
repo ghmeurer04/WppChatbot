@@ -3,6 +3,7 @@ const express = require('express');
 const Stripe = require("stripe");
 const app = express();
 
+
 // Replace this endpoint secret with your unique endpoint secret key
 // If you're testing with the CLI, run 'stripe listen' to find the secret key
 // If you defined your endpoint using the API or the Dashboard, check your webhook settings for your endpoint secret: https://dashboard.stripe.com/webhooks
@@ -29,10 +30,10 @@ app.post('/stripe/webhook', express.raw({type: 'application/json'}), async (requ
 
   // Handle the event
   switch (event.type) {
-    case 'invoice.payment_succeeded':
+    case 'invoice.payment_succeeded': 
       const payment = event.data.object;
       console.log(payment.customer_phone,payment.customer_name,payment.customer_email)
-      await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email)
+      await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email,parseInt(payment.amount_paid/990))
       break;
     default:
       console.log(event.type)
