@@ -238,7 +238,7 @@ client.on('message', async msg => {
                             const user = await db.find('users', {"phone_number": {$eq: number}});
                             await db.update('users', {"phone_number": {$eq: number}}, {$set: {"requests": user[0].requests + 1}});
                             const result = JSON.parse(response.match(/\{[\s\S]*\}/)[0]);
-                            console.log(result);
+                            //console.log(result);
                             const reports = await db.find('report', {"phone_number": {$eq: number}});
                             var new_id = reports.length == 0 ? 1 : reports[reports.length-1].id + 1;
                             let date = new Date();

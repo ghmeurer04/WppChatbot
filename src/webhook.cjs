@@ -41,7 +41,7 @@ app.post('/stripe/webhook', express.raw({type: 'application/json'}), async (requ
       await cb.refund_user(refund.billing_details.name,refund.billing_details.email,refund.customer,refund.amount_refunded/MONTHLY_AMOUNT)
       break;
     default:
-      console.log(event.type)
+      //console.log(event.type)
       
   }
 
