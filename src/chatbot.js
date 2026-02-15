@@ -45,10 +45,14 @@ client.on('message', async msg => {
         const number = contact.id._serialized; // User phone number
         const name = contact.pushname; // User name
         console.log(number, msg.from, msg.body);
+        let variant = 'cida'
         
 
         // Check if user is registered
         const user = await db.find('users', {"phone_number": {$eq: number}});
+        if(user.variant){
+            variant = user.variant
+        }
         msg.body = msg.body.toLowerCase().trim(); // Normalize message text
 
 
@@ -79,7 +83,7 @@ client.on('message', async msg => {
 
             // Menu
             else if (msg.body == 'menu') {
-                await client.sendMessage(msg.from, messages.get_message_menu(name));
+                await client.sendMessage(msg.from, messages.get_message_menu(name,variant));
             }
 
             // Check Due Date
@@ -167,9 +171,9 @@ client.on('message', async msg => {
                             "email": splitted[4],
                             "due_date": new Date().setMonth(new Date().getMonth() + 1)});
                     }
-                    await client.sendMessage(new_number, messages.get_message_welcome(splitted[3]));
+                    await client.sendMessage(new_number, messages.get_message_welcome(splitted[3],variant));
                     await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
-                    await client.sendMessage(new_number, messages.get_message_menu(splitted[3]));
+                    await client.sendMessage(new_number, messages.get_message_menu(splitted[3],variant));
                 }
                 // Remove user by admin
                 else if (msg.body.match(/\?rem\?\d*@c\.us/) && await db.countDoc('admin', {"phone_number": {$eq: number}}) > 0) {
@@ -216,7 +220,7 @@ client.on('message', async msg => {
                         }
                         if(first) {
                             first = false;
-                            await client.sendMessage(msg.from, messages.get_message_payment(name));
+                            await client.sendMessage(msg.from, messages.get_message_payment(name,variant));
                         }
                         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
                         await client.sendMessage(msg.from, await messages.get_message_result(result, new_id));
@@ -256,7 +260,7 @@ client.on('message', async msg => {
                                     date = new Date(date.setMonth(date.getMonth() + 1));
                                 }
                                 result.valor = result.parcela + "x de " + result.valor;
-                                await client.sendMessage(msg.from, messages.get_message_payment(name));   
+                                await client.sendMessage(msg.from, messages.get_message_payment(name,variant));   
                             } else {
                                 await db.insert('report', {
                                     "description": String(await db.capitalizeFirstLetter(String(result.descricao))),
@@ -267,7 +271,7 @@ client.on('message', async msg => {
                                     "id": Number(new_id), 
                                     "date": new Date().getTime()
                                 });
-                                await client.sendMessage(msg.from, messages.get_message_payment(name));
+                                await client.sendMessage(msg.from, messages.get_message_payment(name,variant));
                             }
                             await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
                             await client.sendMessage(msg.from, await messages.get_message_result(result, new_id));
@@ -377,9 +381,9 @@ export async function addNewUser(number, name, email,time,stripe_customer) {
             "stripe_customer": stripe_customer
         });
     }
-    await client.sendMessage(number, messages.get_message_welcome(name));
+    await client.sendMessage(number, messages.get_message_welcome(name,variant));
     await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
-    await client.sendMessage(number, messages.get_message_menu(name));
+    await client.sendMessage(number, messages.get_message_menu(name,variant));
 }
 
 export async function refund_user(name,email,stripe_customer,time){

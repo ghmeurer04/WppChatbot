@@ -9,13 +9,33 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 }
 
-export function get_message_welcome(name){
+export function get_message_welcome(name,variant){
+    if (variant == "altair"){
+        return 'Bem-vindo, ' + name + '.\n\
+Aqui você controla seu dinheiro.\n\
+Aqui você mantém disciplina.\n\
+Aqui você evolui.\n\
+Eu organizo. Você decide.\n\n\
+Digite menu para começar.'
+    }
     return 'Parabéns por esse passo, ' + name + '! Agora você tem uma ferramenta que te dá controle, segurança e \
 poder sobre o seu dinheiro.\n\n\
 Para acessar o menu a qualquer momento, é só digitar "*menu*" ou "*fatura*".'
 };
 
-export function get_message_menu(name){
+export function get_message_menu(name,variant){
+    if(variant == 'altair')
+    {
+        return 'O que você pode fazer:\n\n\
+• Ver gastos → digite *fatura* ou *relatório*\n\
+• Registrar gasto → *descrição + valor + pagamento*\n\
+Ex: mercado 150 pix\n\n\
+• Enviar *foto* da fatura\n\
+• Mandar *áudio* com o gasto\n\
+• Registrar assinatura → assinatura Netflix 39.90\n\n\
+Digite *menu* quando quiser voltar.\n\
+Controle total. Simples assim.'
+    }
     return '✨ Oi, ' + name + '! Aqui estão as opções rápidas pra você:\n\n\
 \
 📊 *Ver seus gastos*\n\
@@ -191,9 +211,35 @@ export function get_message_removal_description(new_id){
     }
 }
 
-export function get_message_payment(name){
-    const variant = getRandomInt(1,7);
-    switch (variant){
+export function get_message_payment(name,variant){
+    if (variant == 'altair'){
+        const message = getRandomInt(1,7);
+        switch (message){
+            case 1:
+                return 'Missão concluída, ' + name + '! Registro salvo'
+            case 2:
+                return 'Feito, ' + name + '. Seu gasto foi anotado.'
+            case 3:
+                return 'Registrado. Controle atualizado.'
+            case 4:
+                return 'Gasto registrado com sucesso, ' + name + '.'
+            case 5:
+                return 'Confirmado, ' + name + '. Organização em dia.'
+            case 6:
+                return 'Anotei aqui, ' + name + '. Controle firme.'
+            case 7:
+                return 'Salvo no sistema. Disciplina mantida.'
+            case 8:
+                return 'Anotado, ' + name + '. Seguimos focados.'
+            case 9:
+                return 'Feito, ' + name + '. Controle é poder.'
+            default:
+                return 'Atualizado, ' + name + '. Seu financeiro agradece.'
+        }
+    }
+
+    const message = getRandomInt(1,7);
+    switch (message){
         case 1:
             return '🔥 Show, ' + name + '! Acabei de guardar esse gasto na sua lista!'
         case 2:
