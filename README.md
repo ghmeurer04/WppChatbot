@@ -16,8 +16,9 @@ Um chatbot inteligente para WhatsApp integrado com IA generativa do Google, Mong
 - Node.js v18+
 - npm ou yarn
 - MongoDB
-- Chave API do Google Generative AI
-- Chave secreta do Stripe (opcional)
+- Chave API do Google Generative AI para fotos/mensagens de voz
+- Chave secreta do Stripe
+- Chave API do OpenAI para mensagens de texto
 
 ## 📦 Instalação
 
@@ -89,19 +90,6 @@ Edite `chatbot.js` para ajustar:
 
 ### Webhook Stripe
 Configure seu endpoint Stripe em `webhook.cjs` com sua chave de webhook secreta.
-
-## 🐛 Solução de Problemas
-
-**"whatsapp-web.js not found"**
-- Execute: `npm install whatsapp-web.js`
-
-**Conexão recusada ao MongoDB**
-- Verifique se MongoDB está rodando
-- Confirme a URI de conexão em `.env`
-
-**Erro de QR Code**
-- Verifique se o terminal suporta UTF-8
-- Tente aumentar o tamanho da janela do terminal
 
 ## 📄 Licença
 
