@@ -97,9 +97,24 @@ export function get_message_help(name){
 Simples, rápido e direto ao ponto! 💬✅'
 }
 
-export function get_message_failed_payment(){
-    const variant = getRandomInt(1,15);
-    switch (variant){
+export function get_message_failed_payment(variant){
+    if(variant == 'altair'){
+        const random = getRandomInt(1,2);
+        switch(random){
+            case 1:
+                return 'Algo não está certo.\n\
+Envie o gasto completo:\n\
+descrição + valor + forma.'
+            default:
+                return 'Fala.\n\
+Se quiser registrar um gasto, mande:\n\
+descrição + valor + pagamento\n\
+Ex: gasolina 120 pix\n\
+Digite menu para ver opções.'
+        }
+    }
+    const random = getRandomInt(1,15);
+    switch (random){
         case 1:
             return "💚 Oi! Não consegui identificar um gasto nessa mensagem. Se quiser, é só me mandar o valor 😊"
         case 2:
@@ -133,7 +148,12 @@ export function get_message_failed_payment(){
     }
 }
 
-export function get_message_reminder_failed_payment(){
+export function get_message_reminder_failed_payment(variant){
+    if (variant == 'altair'){
+        return 'Informação incompleta.\n\
+Envie:\n\
+descrição valor pagamento.'
+    }
     return '🌷 Lembrete rápido – Como a Cida funciona\n\n\
 💚 Só um lembretinho 😊\n\
 📒 Como funciona:\n\
@@ -175,9 +195,45 @@ export async function get_message_result(result, new_id){
 📁 Anotação: ' + new_id
 }
 
-export function get_message_removal_description(new_id){
-    const variant = getRandomInt(1,15);
-    switch (variant){
+export function get_message_removal_description(new_id, variant){
+    const random = getRandomInt(1,15);
+
+    if (variant == 'altair'){
+        switch (random){
+            case 1:
+                return "Se errar, é só escrever: Remover Anotação " + new_id
+            case 2:
+                return 'Quer apagar? Escreva: Remover Anotação ' + new_id
+            case 3:
+                return 'Para corrigir, mande: Remover Anotação '  + new_id
+            case 4:
+                return 'Apagar é fácil: Remover Anotação '  + new_id
+            case 5:
+                return 'Errou alguma coisa? Remover Anotação ' + new_id
+            case 6:
+                return 'Para apagar depois, escreva: Remover Anotação ' + new_id
+            case 7:
+                return 'Quer corrigir? Remover Anotação ' + new_id
+            case 8:
+                return "É só escrever assim: Remover Anotação " + new_id
+            case 9:
+                return 'Para excluir, mande: Remover Anotação ' + new_id
+            case 10:
+                return 'Apagar é simples: Remover Anotação ' + new_id
+            case 11:
+                return 'Se quiser apagar, escreva: Remover Anotação ' + new_id
+            case 12:
+                return 'Para corrigir, é só: Remover Anotação ' + new_id
+            case 13:
+                return 'Errou? É só mandar: Remover ' + new_id
+            case 14:
+                return 'Para apagar uma anotação: Remover Anotação ' + new_id
+            default:
+                return 'Fácil assim: Remover Anotação ' + new_id
+        }
+    }
+
+    switch (random){
         case 1:
             return "💚 Se errar, é só escrever: Remover Anotação " + new_id
         case 2:

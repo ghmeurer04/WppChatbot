@@ -3,7 +3,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 
 exports.initialize_client = function(){
 
-    /*const client = new Client({
+    const client = new Client({
         puppeteer: {
             headless: true,
             executablePath: '/usr/bin/google-chrome',
@@ -12,9 +12,9 @@ exports.initialize_client = function(){
                 '--disable-gpu',
             ]
         }
-    })*/
+    })
 
-    const client = new Client(
+    /*const client = new Client(
         {
             puppeteer: {
             headless: true,
@@ -27,12 +27,15 @@ exports.initialize_client = function(){
             authStrategy: new LocalAuth({
                 clientId: 'bot-main' // important
             }),
-            pairWithPhoneNumber: {
+            pairWithPhoneNumber: [{
                 phoneNumber: "556781032093",
                 showNotification: true,
-            },
+            },{
+                phoneNumber: "5567981039492",
+                showNotification: true,
+            }],
         }
-    );
+    );*/
     return client
 }
 

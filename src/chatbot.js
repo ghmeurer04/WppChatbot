@@ -50,8 +50,8 @@ client.on('message', async msg => {
 
         // Check if user is registered
         const user = await db.find('users', {"phone_number": {$eq: number}});
-        if(user.variant){
-            variant = user.variant
+        if(user[0].hasOwnProperty("variant")){
+            variant = user[0].variant
         }
         msg.body = msg.body.toLowerCase().trim(); // Normalize message text
 
@@ -113,7 +113,7 @@ client.on('message', async msg => {
                 await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
                 await client.sendMessage(msg.from, messages.get_message_entry(String(value), new_id));
                 await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
-                await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
+                await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id,variant));
             }
 
             // Report
@@ -225,7 +225,7 @@ client.on('message', async msg => {
                         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
                         await client.sendMessage(msg.from, await messages.get_message_result(result, new_id));
                         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
-                        await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
+                        await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id,variant));
                     }
                 }
                 else {
@@ -276,13 +276,13 @@ client.on('message', async msg => {
                             await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
                             await client.sendMessage(msg.from, await messages.get_message_result(result, new_id));
                             await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
-                            await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
+                            await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id,variant));
                         } catch (e) {
                             console.log('Erro:', e);
                             console.log('Mensagem:', msg.body);
-                            await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
+                            await client.sendMessage(msg.from, messages.get_message_failed_payment(variant));
                             await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
-                            await client.sendMessage(msg.from, messages.get_message_reminder_failed_payment());
+                            await client.sendMessage(msg.from, messages.get_message_reminder_failed_payment(variant));
                         }
                     }
                     // Subscription registration
@@ -292,7 +292,7 @@ client.on('message', async msg => {
                         await db.update('users', {"phone_number": {$eq: number}}, {$set: {"requests": user[0].requests + 1}});
                         if (response == msg.body) {
                             console.log("erro de assinatura");
-                            await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
+                            await client.sendMessage(msg.from, messages.get_message_failed_payment(variant));
                         }
                         const result = JSON.parse(response.match(/\{[\s\S]*\}/)[0]);
                         const reports = await db.find('report', {"phone_number": {$eq: number}});
@@ -309,7 +309,7 @@ client.on('message', async msg => {
                         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
                         await client.sendMessage(msg.from, messages.get_message_signature(String(await db.capitalizeFirstLetter(String(result.descricao))), String(result.valor), new_id));
                         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME)); 
-                        await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id));
+                        await client.sendMessage(msg.from, await messages.get_message_removal_description(new_id,variant));
                     }
                     // Reminder handling
                     else if (response == 'lembrete') {
@@ -334,7 +334,7 @@ client.on('message', async msg => {
                     // Unrecognized message
                     else {
                         console.log("nao identificada");
-                        await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
+                        await client.sendMessage(msg.from, messages.get_message_failed_payment(variant));
                     }
                 }
 
@@ -355,7 +355,7 @@ client.on('message', async msg => {
         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
         console.log('Erro:', e);
         console.log('Mensagem:', msg.body);
-        await client.sendMessage(msg.from, messages.get_message_failed_payment(name));
+        await client.sendMessage(msg.from, messages.get_message_failed_payment(variant));
 
         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
         await chat.sendStateTyping();
