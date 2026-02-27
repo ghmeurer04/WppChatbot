@@ -24,8 +24,8 @@ An intelligent WhatsApp chatbot integrated with Google Generative AI, MongoDB, a
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/ghmeurer/CidaChatbot.git
-cd CidaChatbot
+git clone https://github.com/ghmeurer/WppChatbot.git
+cd WppChatbot
 ```
 
 2. Install dependencies:
@@ -44,7 +44,7 @@ MONGODB_URI=your_mongodb_uri
 ## 🏗️ Project Structure
 
 ```
-CidaChatbot/
+WppChatbot/
 ├── chatbot.js           # Main WhatsApp chatbot logic
 ├── database.mjs         # MongoDB integration
 ├── messages.js          # Message handling
