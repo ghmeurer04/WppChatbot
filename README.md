@@ -1,116 +1,101 @@
-# CidaChatbot
+# WhatsappChatbot
 
-Um chatbot inteligente para WhatsApp integrado com IA generativa do Google, MongoDB e webhook Stripe.
+An intelligent WhatsApp chatbot integrated with Google Generative AI, MongoDB, and Stripe webhooks.
 
-## 🚀 Funcionalidades
+## 🚀 Features
 
-- **WhatsApp Integration**: Conecte-se ao WhatsApp Web usando `whatsapp-web.js`
-- **IA Generativa**: Integração com Google Generative AI para respostas inteligentes
-- **Banco de Dados**: MongoDB para armazenar mensagens e dados
-- **Webhooks Stripe**: Processamento de eventos de pagamento
-- **QR Code**: Autenticação via QR Code no terminal
-- **Autenticação Local**: Suporte para autenticação persistente
+- **WhatsApp Integration**: Connects to WhatsApp Web using `whatsapp-web.js`
+- **Generative AI**: Integration with Google Generative AI for intelligent responses
+- **Database**: MongoDB for storing messages and application data
+- **Stripe Webhooks**: Payment event processing
+- **QR Code**: QR Code authentication directly in the terminal
+- **Local Authentication**: Persistent WhatsApp authentication support
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
 - Node.js v18+
-- npm ou yarn
+- npm or yarn
 - MongoDB
-- Chave API do Google Generative AI
-- Chave secreta do Stripe (opcional)
+- Google Generative AI API key (for images/voice messages)
+- Stripe secret key
+- OpenAI API key (for text messages)
 
-## 📦 Instalação
+## 📦 Installation
 
-1. Clone o repositório:
+1. Clone the repository:
 ```bash
-git clone https://github.com/ghmeurer/CidaChatbot.git
-cd CidaChatbot
+git clone https://github.com/ghmeurer/WppChatbot.git
+cd WppChatbot
 ```
 
-2. Instale as dependências:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configure as variáveis de ambiente:
-Crie um arquivo `.env` na raiz do projeto com:
+3. Configure environment variables:
+Create a `.env` file in the project root with:
 ```env
-GOOGLE_API_KEY=sua_chave_api_google
-STRIPE_SECRET_KEY=sua_chave_stripe
-MONGODB_URI=sua_uri_mongodb
+GOOGLE_API_KEY=your_google_api_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+MONGODB_URI=your_mongodb_uri
 ```
 
-## 🏗️ Estrutura do Projeto
+## 🏗️ Project Structure
 
 ```
-CidaChatbot/
-├── chatbot.js           # Lógica principal do chatbot WhatsApp
-├── database.mjs         # Integração com MongoDB
-├── messages.js          # Gerenciamento de mensagens
-├── webhook.cjs          # Webhook Stripe
-├── LocalAuth.cjs        # Autenticação WhatsApp Web
-├── package.json         # Dependências do projeto
-└── README.md           # Este arquivo
+WppChatbot/
+├── chatbot.js           # Main WhatsApp chatbot logic
+├── database.mjs         # MongoDB integration
+├── messages.js          # Message handling
+├── webhook.cjs          # Stripe webhook
+├── LocalAuth.cjs        # WhatsApp Web authentication
+├── package.json         # Project dependencies
+└── README.md            # This file
 ```
 
-## 📝 Uso
+## 📝 Usage
 
-Inicie o chatbot:
+Start the chatbot:
 ```bash
 npm start
 ```
 
-Ou com Node.js diretamente:
+Or run it directly with Node.js:
 ```bash
 node chatbot.js
 ```
 
-1. Um QR Code será exibido no terminal
-2. Escaneie com seu WhatsApp
-3. O bot estará pronto para receber e responder mensagens
+1. A QR Code will be displayed in the terminal
+2. Scan it using your WhatsApp app
+3. The bot will be ready to receive and respond to messages
 
-## 🔌 Dependências Principais
+## 🔌 Main Dependencies
 
-- **whatsapp-web.js**: Cliente WhatsApp Web para Node.js
-- **@google/generative-ai**: API de IA generativa do Google
-- **mongodb**: Driver MongoDB para Node.js
-- **express**: Framework para webhooks (se usando)
-- **stripe**: Integração com pagamentos Stripe
-- **moment-timezone**: Gerenciamento de fusos horários
-- **qrcode-terminal**: Geração de QR Code no terminal
+- **whatsapp-web.js**: WhatsApp Web client for Node.js
+- **@google/generative-ai**: Google Generative AI API
+- **mongodb**: MongoDB driver for Node.js
+- **express**: Web framework (used for webhooks if enabled)
+- **stripe**: Stripe payments integration
+- **moment-timezone**: Timezone handling
+- **qrcode-terminal**: QR Code generation in the terminal
 
-## ⚙️ Configuração Avançada
+## ⚙️ Advanced Configuration
 
-### Timeout de Mensagens
-Edite `chatbot.js` para ajustar:
-- `MIN_TIME`: Tempo mínimo entre respostas (ms)
-- `MAX_TIME`: Tempo máximo entre respostas (ms)
-- `REQUEST_LIMIT`: Limite de requisições
+### Message Timeout
+Edit `chatbot.js` to adjust:
+- `MIN_TIME`: Minimum delay between responses (ms)
+- `MAX_TIME`: Maximum delay between responses (ms)
+- `REQUEST_LIMIT`: Request limit
 
-### Webhook Stripe
-Configure seu endpoint Stripe em `webhook.cjs` com sua chave de webhook secreta.
+### Stripe Webhook
+Configure your Stripe endpoint in `webhook.cjs` using your webhook secret key.
 
-## 🐛 Solução de Problemas
+## 📄 License
 
-**"whatsapp-web.js not found"**
-- Execute: `npm install whatsapp-web.js`
+This project is licensed **for non-commercial use only**.  
+Commercial use requires explicit authorization from the author.
 
-**Conexão recusada ao MongoDB**
-- Verifique se MongoDB está rodando
-- Confirme a URI de conexão em `.env`
+## 👤 Author
 
-**Erro de QR Code**
-- Verifique se o terminal suporta UTF-8
-- Tente aumentar o tamanho da janela do terminal
-
-## 📄 Licença
-
-Este projeto é licenciado **apenas para uso não comercial**.  
-O uso comercial requer autorização explícita do autor.
-
-
-## 👤 Autor
-
-Gabriel Meurer - [@ghmeurer](https://github.com/ghmeurer)
-
----
+Gabriel Meurer – [@ghmeurer](https://github.com/ghmeurer)
