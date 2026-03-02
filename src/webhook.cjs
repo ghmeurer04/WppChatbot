@@ -9,7 +9,8 @@ const app = express();
 // If you defined your endpoint using the API or the Dashboard, check your webhook settings for your endpoint secret: https://dashboard.stripe.com/webhooks
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.WEBHOOK_SECRET_KEY
-const MONTHLY_AMOUNT = 990
+const MONTHLY_AMOUNT = 1990
+const ANNUAL_AMOUNT = 15480
 
 // The express.raw middleware keeps the request body unparsed;
 // this is necessary for the signature verification process
@@ -34,7 +35,11 @@ app.post('/stripe/webhook', express.raw({type: 'application/json'}), async (requ
     case 'invoice.payment_succeeded': 
       const payment = event.data.object;
       console.log(payment.customer_phone,payment.customer_name,payment.customer_email)
-      await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email,parseInt(payment.amount_paid/MONTHLY_AMOUNT),payment.customer)
+      if (payment.amount_paid == MONTHLY_AMOUNT){
+        await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email,parseInt(payment.amount_paid/MONTHLY_AMOUNT),payment.customer)
+      } else {
+        await cb.addNewUser(payment.customer_phone,payment.customer_name,payment.customer_email,parseInt(payment.amount_paid/ANNUAL_AMOUNT),payment.customer)
+      }
       break;
     case 'charge.refunded':
       const refund = event.data.object;

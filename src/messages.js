@@ -3,6 +3,7 @@ import * as db from './database.mjs';
 const string_categories = "['Moradia','Supermercado','Alimentação','Social & Lazer','Saúde','Transporte','Educação','Investimentos','Compras','Outros']";
 const method_categories = "['Dinheiro','Cartão de Crédito','Cartão de Débito','Pix','Boleto']";
 
+
 function getRandomInt(min, max) {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
@@ -112,7 +113,7 @@ descrição + valor + pagamento\n\
 Ex: gasolina 120 pix\n\
 Digite menu para ver opções.'
         }
-    }
+    } else if (variant == 'cida'){
     const random = getRandomInt(1,15);
     switch (random){
         case 1:
@@ -145,6 +146,9 @@ Digite menu para ver opções.'
             return '💕 Me manda o valor do gasto que eu cuido do resto'
         default:
             return '🌷 Acho que dessa vez não veio um gasto. Quando quiser, estou aqui'
+    }
+    } else {
+        return 'Quando quiser registrar algo, é só me avisar'
     }
 }
 
@@ -297,19 +301,19 @@ export function get_message_payment(name,variant){
     const message = getRandomInt(1,7);
     switch (message){
         case 1:
-            return '🔥 Show, ' + name + '! Acabei de guardar esse gasto na sua lista!'
+            return '💕 Show, ' + name + '! Acabei de guardar esse gasto na sua lista!'
         case 2:
-            return '✅ ' + name + ', registro concluído com sucesso.'
+            return '🌼 ' + name + ', registro concluído com sucesso.'
         case 3:
             return '🎉 ' + name + ', registro feito com sucesso!'
         case 4:
-            return '✅ Gasto anotado com sucesso, ' + name + ' 🚀'
+            return 'Gasto anotado com sucesso, ' + name + ' 🌷'
         case 5:
             return '✨ Pronto, ' + name + '! Seu gasto foi registrado. Organização em dia 😉'
         case 6:
-            return '📌 Registro confirmado, ' + name + '! Mais um passo para manter tudo sob controle 💼'
+            return 'Registro confirmado, ' + name + '! Mais um passo para manter tudo sob controle 🌱'
         case 7:
-            return '👏 ' + name + ', gasto salvo com sucesso! Boa disciplina financeira 💪'
+            return '👏 ' + name + ', gasto salvo com sucesso! Boa disciplina financeira 💚'
         default:
             return '✨ Pronto, ' + name + '! Seu gasto foi registrado. Organização em dia 😉'
     }
@@ -432,7 +436,7 @@ export function get_prompt_messagetype(message){
 }
 
 export function get_prompt_reminder(message){
-    return "Considerando que agora é " + new Date() + ". Identifique a descricao e a data/hora descritos na frase a seguir. Retorne um json contendo tres chaves, uma de descricao, chamada descricao, uma de data no formato mm/dd/yyyy, chamada data, e outra de hora no formato hh:mm, chamada hora.\
+    return "Considerando que agora é " + new Date() + " e a mensagem é no fuso horário de Brasilia. Identifique a descricao e a data/hora descritos na frase a seguir. Retorne um json contendo tres chaves, uma de descricao, chamada descricao, uma de data no formato mm/dd/yyyy, chamada data, e outra de hora no formato hh:mm, chamada hora.\
 Frase: " + message;
 }
 
@@ -464,10 +468,10 @@ export async function get_report_message(input_msg, number,last_month = false){
                 message += '🧾 Fatura ' + await db.capitalizeFirstLetter(start.toLocaleString('pt-BR', { month: 'long' })) + '/' + start.getFullYear() + '\n';
                 start = new Date((start.getMonth()+1) + '/01/' + start.getFullYear())
             }
-            start.setUTCHours(0,0,0,1)
-            end.setUTCHours(23,59,59,999)
             start = new Date(start.setHours(start.getHours() + 3));
             end = new Date(end.getFullYear(),end.getMonth() + 1,0);
+            start.setUTCHours(0,0,0,1)
+            end.setUTCHours(23,59,59,999)
             var documents = await db.find('report',{$and:[{"phone_number":{$eq:number}},{"method":{$ne:"Assinatura"}},{"date":{$gt:start.getTime()}},{"date":{$lt:end.getTime()}}]});
             var signatures = await db.find('report',{$and:[{"phone_number":{$eq:number}},{"method":{$eq:"Assinatura"}}]});
             var entrada = documents.filter(x => x.method == '')

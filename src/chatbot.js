@@ -12,47 +12,75 @@ let MAX_TIME = 6000; // Maximum time delay for typing indicator
 let REQUEST_LIMIT = 300; // Limit for user requests
 
 
-// Initialize WhatsApp client
-const client = localAuth.initialize_client();
+// WhatsApp clients to run in parallel (one per number)
+const CLIENTS = [
+    { id: 'bot-556781032093', label: '556781032093', phoneNumber: '556781032093', variant: 'cida'},
+    { id: 'bot-5567981039492', label: '5567981039492', phoneNumber: '5567981039492', variant: 'altair' }
+];
 
+const clients = CLIENTS.map((entry) => ({
+    ...entry,
+    client: localAuth.initialize_client(entry.id, entry.phoneNumber)
+}));
 
-// Event: Handle QR code generation for client authentication
-client.on('qr', qr => {
-    qrcode.generate(qr, {small: true});
-});
+let dbInitialized = false;
+let primaryClient = null;
 
-// Event: Log linking code for client
-client.on('code', (code) => {
-    console.log("Linking code:", code);
-});
+function getDefaultClient() {
+    if (primaryClient) {
+        return primaryClient;
+    }
+    if (clients.length > 0) {
+        return clients[0].client;
+    }
+    throw new Error('No WhatsApp clients configured.');
+}
 
+function registerClient(client, label, variant) {
+    // Event: Handle QR code generation for client authentication
+    client.on('qr', qr => {
+        console.log(`[${label}] Scan the QR code`);
+        qrcode.generate(qr, {small: true});
+    });
 
-// Event: Client ready state
-client.on('ready', () => {
-    console.log('Tudo certo! WhatsApp conectado.');
-    db.initialize(); // Initialize database
-    f.sendToWhatsApp(client); // Send initial WhatsApp connection message
-});
+    // Event: Log linking code for client
+    client.on('code', (code) => {
+        console.log(`[${label}] Linking code:`, code);
+    });
 
-client.initialize(); // Begin client initialization
+    // Event: Client ready state
+    client.on('ready', () => {
+        console.log(`[${label}] Tudo certo! WhatsApp conectado.`);
+        if (!dbInitialized) {
+            db.initialize(); // Initialize database once
+            dbInitialized = true;
+        }
+        if (!primaryClient) {
+            primaryClient = client;
+        }
+        f.sendToWhatsApp(client, variant); // Send initial WhatsApp connection message
+    });
 
+    // Event: Handle incoming messages
+    client.on('message', async msg => {
+        await handleMessage(client, msg);
+    });
 
-// Event: Handle incoming messages
-client.on('message', async msg => {
+    client.initialize(); // Begin client initialization
+}
+
+async function handleMessage(client, msg) {
+    let variant = 'cida';
     try {
         // Fetch contact and message details
         const contact = await msg.getContact();
         const number = contact.id._serialized; // User phone number
         const name = contact.pushname; // User name
         console.log(number, msg.from, msg.body);
-        let variant = 'cida'
         
 
         // Check if user is registered
         const user = await db.find('users', {"phone_number": {$eq: number}});
-        if(user[0].hasOwnProperty("variant")){
-            variant = user[0].variant
-        }
         msg.body = msg.body.toLowerCase().trim(); // Normalize message text
 
 
@@ -67,6 +95,9 @@ client.on('message', async msg => {
             // Check if user is not registered
             if (user.length == 0) {
                 //await client.sendMessage(msg.from, messages.get_message_unregistered(name));
+            }
+            if(user[0].hasOwnProperty("variant")){
+                variant = user[0].variant
             }
 
             // Handle request limit
@@ -136,6 +167,16 @@ client.on('message', async msg => {
                     await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
                     await client.sendMessage(msg.from, "Desculpe, não consegui realizar uma análise nesse momento, favor tentar novamente mais tarde");
                 }
+            }
+
+            // Set Preferred Variant as Altair
+            else if ((msg.body == "variante altair")) {
+                await db.update('users', {"phone_number": {$eq: number}}, {$set: {"variant": 'altair'}});
+            }
+
+            // Set Preferred Variant as Cida
+            else if ((msg.body == "variante cida")) {
+                await db.update('users', {"phone_number": {$eq: number}}, {$set: {"variant": 'cida'}});
             }
 
             // Remove Expenses
@@ -314,18 +355,20 @@ client.on('message', async msg => {
                     // Reminder handling
                     else if (response == 'lembrete') {
                         var response = await db.get_request(messages.get_prompt_reminder(msg.body));
+                        console.log(response)
                         const user = await db.find('users', {"phone_number": {$eq: number}});
                         await db.update('users', {"phone_number": {$eq: number}}, {$set: {"requests": user[0].requests + 1}});
                         await client.sendMessage(msg.from, messages.get_reminder_confirmation(name));
                         response = JSON.parse(response.match(/\{[\s\S]*\}/)[0]);
-                        let hour = response.hora.split(":")[0];
-                        let min = response.hora.split(":")[1];
-                        var reminder_date = new Date(new Date(response.data).setUTCHours(hour, min, 0, 1)) - new Date().setHours(new Date().getHours() - 3);
+                        const ddd = number.slice(2,4)
+                        let reminder_date = f.get_reminder_date(response,ddd)
+                        console.log(reminder_date)
                         if(reminder_date > 3600000) { // If reminder date is more than 1 hour in future
-                            await new Promise(resolve => setTimeout(resolve, 3600000));
+                            await new Promise(resolve => setTimeout(resolve, reminder_date - 3600000));
                             await client.sendMessage(msg.from, await messages.get_reminder_message(name, response.descricao, response.hora));
                         }
-                        reminder_date = new Date(response.data).setHours(hour,min) - new Date();
+                        reminder_date = f.get_reminder_date(response,ddd)
+                        console.log(reminder_date)
                         if(reminder_date > 0) { // If reminder date is in the future
                             await new Promise(resolve => setTimeout(resolve, reminder_date));
                             await client.sendMessage(msg.from, await messages.get_reminder_message(name, response.descricao, response.hora));
@@ -361,10 +404,14 @@ client.on('message', async msg => {
         await chat.sendStateTyping();
         await f.delay(db.getRandomInt(MIN_TIME, MAX_TIME));
     }
-});
+}
+
+clients.forEach(({ client, label, variant }) => registerClient(client, label, variant));
 
 // Function to add a new user
 export async function addNewUser(number, name, email,time,stripe_customer) {
+    const client = getDefaultClient();
+    const variant = 'cida';
     number = number.replace("+", "");
     number = await client.getNumberId(number);
     number = number._serialized;

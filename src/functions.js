@@ -1,6 +1,81 @@
 import * as db from './database.mjs'
 import * as messages from './messages.js'
 
+const DDD_JSON = {
+  "11": 3,
+  "12": 3,
+  "13": 3,
+  "14": 3,
+  "15": 3,
+  "16": 3,
+  "17": 3,
+  "18": 3,
+  "19": 3,
+  "21": 3,
+  "22": 3,
+  "24": 3,
+  "27": 3,
+  "28": 3,
+  "31": 3,
+  "32": 3,
+  "33": 3,
+  "34": 3,
+  "35": 3,
+  "37": 3,
+  "38": 3,
+  "41": 3,
+  "42": 3,
+  "43": 3,
+  "44": 3,
+  "45": 3,
+  "46": 3,
+  "47": 3,
+  "48": 3,
+  "49": 3,
+  "51": 3,
+  "53": 3,
+  "54": 3,
+  "55": 3,
+  "61": 3,
+  "62": 3,
+  "64": 3,
+  "63": 3,
+  "65": 4,
+  "66": 4,
+  "67": 4,
+  "68": 5,
+  "69": 4,
+  "71": 3,
+  "73": 3,
+  "74": 3,
+  "75": 3,
+  "77": 3,
+  "79": 3,
+  "81": 3,
+  "82": 3,
+  "83": 3,
+  "84": 3,
+  "85": 3,
+  "86": 3,
+  "87": 3,
+  "88": 3,
+  "89": 3,
+  "91": 3,
+  "93": 4,
+  "94": 4,
+  "95": 4,
+  "96": 3,
+  "97": 4,
+  "98": 3,
+  "99": 3
+}
+
+export function get_reminder_date (response,ddd){
+  const hour = response.hora.split(":")[0];
+  const min = response.hora.split(":")[1];
+  return new Date(new Date(response.data).setUTCHours(hour, min, 0, 1)) - new Date().setHours(new Date().getHours() - DDD_JSON[ddd]);
+}
+
 
 function remainingTime() {
     const current = new Date();
@@ -23,7 +98,7 @@ export async function export_excel(){
     XLSX.writeFile(workbook, "output.xlsx");
 }
 
-export async function sendToWhatsApp(client) {
+export async function sendToWhatsApp(client,variant) {
     console.log('Sending messages to WhatsApp...');
     
     var time = remainingTime();
@@ -36,7 +111,7 @@ export async function sendToWhatsApp(client) {
       time = remainingTime();
    }
     await new Promise(resolve => setTimeout(resolve, time));
-    //const users = await db.find('users',{"phone_number":{$ne:"12138927437@c.us"}}); // Exclude Zapier number
+    //const users = await db.find('users',{"phone_number":{$ne:"12138927437@c.us"},"variant": {$eq:variant}}); // Exclude Zapier number
     const users = await db.find('users',{"phone_number":{$eq:"556798553495@c.us"}});
     for (let i = 0; i < users.length; i++) {
         var user = users[i];
